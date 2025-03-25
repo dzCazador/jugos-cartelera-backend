@@ -1,6 +1,12 @@
-import { Controller, Get, Post, Body, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Req,UseGuards,UseInterceptors,UploadedFile  } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { MessageService } from './message.service';
-import { Request } from 'express';
+import { CreateMessageDto } from './dto/create-message.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
+import { Express } from 'express';
+
 
 @Controller('messages')
 export class MessageController {
@@ -8,16 +14,22 @@ export class MessageController {
 
   // Crear un mensaje (solo para ADMIN)
   @Post()
-  async createMessage(@Body() data: { content: string; isPublic: boolean }, @Req() req: Request) {
+  @UseGuards(AuthGuard('jwt'))
+  @UseInterceptors(FileInterceptor('file', {
+    storage: diskStorage({
+      destination: './public/uploads',
+      filename: (req, file, cb) => {
+        const randomName = Array(32).fill(null).map(() => (Math.round(Math.random() * 16)).toString(16)).join('');
+        return cb(null, `${randomName}${extname(file.originalname)}`);
+      },
+    }),
+  }))  
+  async createMessage(@Body() createMessageDto: CreateMessageDto, 
+                      @Req() req: any,
+                      @UploadedFile() file: Express.Multer.File) {
     const userId = req.user.id; // Suponiendo que el ID del usuario está en el token JWT
-    return this.messageService.createMessage({ ...data, userId });
-  }
-
-  // Obtener todos los mensajes (solo para ADMIN)
-  @Get('all')
-  async getAllMessages(@Req() req: Request) {
-    const userId = req.user.id; // Suponiendo que el ID del usuario está en el token JWT
-    return this.messageService.getAllMessages(userId);
+    const filePath = file ? file.path : null; // Ruta del archivo subido
+    return this.messageService.createMessage({...createMessageDto,file:filePath}, userId);
   }
 
   // Obtener mensajes públicos (para todos los usuarios)
@@ -28,7 +40,8 @@ export class MessageController {
 
   // Obtener mensajes privados del usuario logueado (para USER)
   @Get('private')
-  async getPrivateMessages(@Req() req: Request) {
+  @UseGuards(AuthGuard('jwt'))
+  async getPrivateMessages(@Req() req: any) {
     const userId = req.user.id; // Suponiendo que el ID del usuario está en el token JWT
     return this.messageService.getPrivateMessages(userId);
   }

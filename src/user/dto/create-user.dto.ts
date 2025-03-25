@@ -10,8 +10,8 @@ export class CreateUserDto {
   name?: string; // El nombre es opcional
 
   @IsString()
-  @MinLength(8, { message: 'La contraseña debe tener al menos 8 caracteres' })
-  password: string; // La contraseña debe tener al menos 8 caracteres
+  @MinLength(6, { message: 'La contraseña debe tener al menos 6 caracteres' })
+  password: string; // La contraseña debe tener al menos 6 caracteres
 
   @IsOptional()
   @IsEnum(Role, { message: 'El rol debe ser uno de los valores válidos: ADMIN, USER' })

@@ -1,3 +1,4 @@
+import { CreateMessageDto } from './dto/create-message.dto';
 import { Injectable } from '@nestjs/common';
 import { Role } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -7,12 +8,12 @@ export class MessageService {
   constructor(private prisma: PrismaService) {}
 
   // Crear un mensaje (solo para usuarios con rol ADMIN)
-  async createMessage(data: { content: string; isPublic: boolean; userId: number }) {
-    const user = await this.prisma.user.findUnique({ where: { id: data.userId } });
+  async createMessage(createMessageDto:CreateMessageDto, userId: number) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (user.role !== Role.ADMIN) {
       throw new Error('Solo los administradores pueden crear mensajes');
     }
-    return this.prisma.message.create({ data });
+    return this.prisma.message.create({data: {...createMessageDto}} );
   }
 
   // Obtener todos los mensajes (solo para usuarios con rol ADMIN)

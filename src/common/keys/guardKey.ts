@@ -1,0 +1,1 @@
+export const GUARD_KEY: string = 'APP_GUARD'
