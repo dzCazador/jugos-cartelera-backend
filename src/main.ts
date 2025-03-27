@@ -6,6 +6,7 @@ import {envs} from './configuration'
 import * as cors from 'cors';
 import * as serveStatic from 'serve-static';
 import { join } from 'path';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 
 //import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
@@ -33,17 +34,16 @@ async function bootstrap() {
     )
   )
 
-  /*
   //Configuracion de Swagger
   const config = new DocumentBuilder()
-    .setTitle('API REST Example')
+    .setTitle('API REST CARTELERA')
+    .addBearerAuth()
     .setDescription('API REST documentation')
     .setVersion('1.0')
     .addTag('examples')
     .build();
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document);
-  */
+  SwaggerModule.setup('apidocs', app, document);
 
   // Servir el sitio estático desde la raíz
   app.use('/', serveStatic(join(__dirname, '..', 'public'))); // Asegúrate de que la ruta 'public' sea correcta
